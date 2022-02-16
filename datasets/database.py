@@ -20,9 +20,14 @@ from functools import partial
 
 from .celeba_spoof import CelebASpoofDataset
 from .casia_surf import CasiaSurfDataset
+from .text_folder_dataset import TextFolderDataset
 from .lcc_fasd import LccFasdDataset
 
+
 def do_nothing(**args):
+    pass
+
+def read_from_txt(**args):
     pass
 
 # import your reader and replace do_nothing with it
@@ -69,5 +74,14 @@ def get_datasets(config):
                 #'external_val': partial(external_reader, **config.external.val_params),
 
                 #'external_test': partial(external_reader, **config.external.test_params)
+                'replay_attack_train': partial(TextFolderDataset, root_folder=config.datasets.replay_attack.root_folder,
+                                                data_folder=config.datasets.replay_attack.train_data_folder,
+                                                txt_filename=config.datasets.replay_attack.train_txt_filename),
+                'replay_attack_test': partial(TextFolderDataset, root_folder=config.datasets.replay_attack.root_folder,
+                                               data_folder=config.datasets.replay_attack.test_data_folder,
+                                               txt_filename=config.datasets.replay_attack.test_txt_filename),
+                'replay_attack_val': partial(TextFolderDataset, root_folder=config.datasets.replay_attack.root_folder,
+                                              data_folder=config.datasets.replay_attack.val_data_folder,
+                                              txt_filename=config.datasets.replay_attack.val_txt_filename)
                 }
     return datasets
