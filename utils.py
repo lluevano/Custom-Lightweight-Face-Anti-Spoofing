@@ -84,7 +84,13 @@ def load_checkpoint(checkpoint_path, net, map_location, optimizer=None, load_opt
     print("\n==> Loading checkpoint")
     checkpoint = torch.load(checkpoint_path, map_location=map_location)
     if 'state_dict' in checkpoint:
-        unloaded = net.load_state_dict(checkpoint['state_dict'], strict=strict)
+        state_dict = checkpoint['state_dict']
+        from collections import OrderedDict
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            name = k[7:] if k.startswith('module.') else k # remove `module.`
+            new_state_dict[name] = v
+        unloaded = net.load_state_dict(new_state_dict, strict=strict)
         missing_keys, unexpected_keys = (', '.join(i) for i in unloaded)
     else:
         unloaded = net.load_state_dict(checkpoint, strict=strict)
@@ -212,7 +218,6 @@ def make_loader(train, val, test, config, sampler=None):
                                                 shuffle=True, pin_memory=config.data.pin_memory,
                                                 num_workers=config.data.data_loader_workers,
                                                     collate_fn=collate_fn)
-
     return train_loader, val_loader, test_loader
 
 def build_model(config, device, strict=True, mode='train'):
