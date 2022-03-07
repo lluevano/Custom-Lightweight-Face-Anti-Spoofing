@@ -43,11 +43,10 @@ def main():
     device = f'cuda:{args.GPU}' if args.device == 'cuda' else 'cpu'
     image_size = args.img_size
     save_path = args.model_path
-    num_layers = args.num_layers
-    export_onnx(config, device=device, num_layers=num_layers,
+    export_onnx(config, device=device,
                 img_size=image_size, save_path=save_path)
 
-def export_onnx(config, device='cuda:0', num_layers=16,
+def export_onnx(config, device='cuda:0',
                 img_size=(128,128), save_path='model.onnx'):
     # get snapshot
     experiment_snapshot = config.checkpoint.snapshot_name
