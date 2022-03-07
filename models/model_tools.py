@@ -219,7 +219,7 @@ class MobileNet(nn.Module):
             return spoof_out, type_spoof, lightning_type, real_atr
         return spoof_out
 
-    def forward_to_onnx(self,x):
+    def forward_to_onnx(self,x, scaling=1):
         x = self.features(x)
         x = self.conv_last(x)
         x = self.avgpool(x)
@@ -227,5 +227,5 @@ class MobileNet(nn.Module):
         spoof_out = self.spoofer(x)
         if isinstance(spoof_out, tuple):
             spoof_out = spoof_out[0]
-        probab = F.softmax(spoof_out*self.scaling, dim=-1)
+        probab = F.softmax(spoof_out*scaling, dim=-1)
         return probab
