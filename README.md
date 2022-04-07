@@ -1,3 +1,6 @@
+# Custom Lightweight Face Anti Spoofing
+This is a fork of Lightface Anti Spoofing by kprokofi: https://github.com/kprokofi/light-weight-face-anti-spoofing modified for our needs at Tec and CENATAV.
+
 # Lightweight Face Anti Spoofing
 Towards the solving anti-spoofing problem on RGB only data.
 ## Introduction
