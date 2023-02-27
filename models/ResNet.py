@@ -93,7 +93,7 @@ class ResNet(MobileNet):
         
         
         self.conv_last = nn.Sequential(
-                        nn.Conv2d(2048, self.embeding_dim, 1, 1, 'same'),
+                        nn.Conv2d(512*ResBlock.expansion, self.embeding_dim, 1, 1, 'same'),
                         nn.BatchNorm2d(self.embeding_dim),
                         h_swish()
                     )

@@ -17,3 +17,4 @@ datasets/*/**/*
 *.idea/*
 __pycache__/
 predictions_CVPR.txt
+events.out.tfevents.*
