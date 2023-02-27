@@ -27,6 +27,8 @@ from tqdm import tqdm
 from eval_protocol import evaluate
 from utils import (AverageMeter, cutmix, load_checkpoint,
                    mixup_target, precision, save_checkpoint)
+                   
+import shutil
 
 
 class Trainer:
@@ -164,17 +166,33 @@ class Trainer:
 
     def eval(self, epoch: int, epoch_accuracy: float, save_chkpt: bool=True):
         # evaluate on last 10 epoch and remember best accuracy, AUC, EER, ACER and then save checkpoint
+
+        checkpoint = {'state_dict': self.model.state_dict(),
+                   'optimizer': self.optimizer.state_dict(), 'epoch': epoch}
+            
+        try:
+            new_name_splt = self.path_to_checkpoint.split("/")
+            new_name = f'{epoch-1}_{new_name_splt[-1]}'
+            shutil.copyfile(self.path_to_checkpoint, os.path.join(self.config.checkpoint.experiment_path, new_name))
+        except:
+            pass
+               
+        save_checkpoint(checkpoint, f'{self.path_to_checkpoint}') # always latest
+            
         if (epoch%10 == 0 or epoch >= (self.config.epochs.max_epoch - 10)) and (epoch_accuracy > self.current_accuracy):
             print('__VAL__:')
             AUC, EER, apcer, bpcer, acer = evaluate(self.model, self.val_loader,
                                                     self.config, self.device, compute_accuracy=False)
+            
             print(self.print_result(AUC, EER, epoch_accuracy, apcer, bpcer, acer))
+            
             if acer < self.best_acer:
                 self.best_acer = acer
-                if save_chkpt:
-                    checkpoint = {'state_dict': self.model.state_dict(),
-                                'optimizer': self.optimizer.state_dict(), 'epoch': epoch}
-                    save_checkpoint(checkpoint, f'{self.path_to_checkpoint}')
+                if save_chkpt:        
+                    new_name_splt = self.path_to_checkpoint.split("/")
+                    new_name = os.path.join(*(new_name_splt[:-1]), f'best_{epoch}_{new_name_splt[-1]}')
+                    save_checkpoint(checkpoint, new_name)
+                    
                 self.current_accuracy = epoch_accuracy
                 self.current_eer = EER
                 self.current_auc = AUC

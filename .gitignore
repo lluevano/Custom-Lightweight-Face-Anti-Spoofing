@@ -11,3 +11,9 @@
 
 pkg/
 src/
+*.jpg
+
+datasets/*/**/*
+*.idea/*
+__pycache__/
+predictions_CVPR.txt

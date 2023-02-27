@@ -24,6 +24,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 import pandas as pd
+import math
 
 
 
@@ -58,11 +59,11 @@ class TextFolderDataset(Dataset):
         if self.multi_learning:
             raise "Multi learning not implemented error"
         else:
-            label = int(self.data["class"][idx])
-
+            if math.isnan(self.data["class"][idx]):
+                label = idx
+            else:
+                label = int(self.data["class"][idx])
         if self.transform:
             img = self.transform(label=label, img=img)['image']
         img = np.transpose(img, (2, 0, 1)).astype(np.float32)
         return (torch.tensor(img), torch.tensor(label, dtype=torch.long))
-
-

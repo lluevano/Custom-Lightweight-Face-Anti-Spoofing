@@ -25,13 +25,18 @@ from importlib import import_module
 
 import numpy as np
 import torch
+import collections
+import collections.abc
+for type_name in collections.abc.__all__:
+    setattr(collections, type_name, getattr(collections.abc, type_name))
+    
 from attrdict import AttrDict as adict
 from torch.utils.data import DataLoader
 
 from datasets import get_datasets
 from losses import (AMSoftmaxLoss, AngleSimpleLinear, SoftTripleLinear,
                     SoftTripleLoss)
-from models import mobilenetv2, mobilenetv3_large, mobilenetv3_small
+from models import mobilenetv2, mobilenetv3_large, mobilenetv3_small, ResNet50
 
 
 class AverageMeter(object):
@@ -85,16 +90,19 @@ def load_checkpoint(checkpoint_path, net, map_location, optimizer=None, load_opt
     checkpoint = torch.load(checkpoint_path, map_location=map_location)
     if 'state_dict' in checkpoint:
         state_dict = checkpoint['state_dict']
-        from collections import OrderedDict
-        new_state_dict = OrderedDict()
-        for k, v in state_dict.items():
-            name = k[7:] if k.startswith('module.') else k # remove `module.`
-            new_state_dict[name] = v
-        unloaded = net.load_state_dict(new_state_dict, strict=strict)
+        if not (isinstance(net, torch.nn.DataParallel)):
+            from collections import OrderedDict
+            new_state_dict = OrderedDict()
+            for k, v in state_dict.items():
+                name = k[7:] if k.startswith('module.') else k # remove `module.`
+                new_state_dict[name] = v
+            state_dict = new_state_dict
+        unloaded = net.load_state_dict(state_dict, strict=strict)
         missing_keys, unexpected_keys = (', '.join(i) for i in unloaded)
     else:
         unloaded = net.load_state_dict(checkpoint, strict=strict)
         missing_keys, unexpected_keys = (', '.join(i) for i in unloaded)
+    print("Checkpoint loaded")
     if missing_keys or unexpected_keys:
         logging.warning(f'THE FOLLOWING KEYS HAVE NOT BEEN LOADED:\n\nmissing keys: {missing_keys}\
             \n\nunexpected keys: {unexpected_keys}\n')
@@ -247,25 +255,29 @@ def build_model(config, device, strict=True, mode='train'):
             model.spoofer = SoftTripleLinear(config.model.embeding_dim, 2,
                                              num_proxies=config.loss.soft_triple.K)
     else:
-        assert config.model.model_type == 'Mobilenet3'
-        if config.model.model_size == 'large':
+        assert config.model.model_type == 'Mobilenet3'or config.model.model_type=='ResNet'
+        if config.model.model_size == 'large' and config.model.model_type=='Mobilenet3':
             model = mobilenetv3_large(**parameters)
-
             if config.model.pretrained and mode == "train":
                 checkpoint_path = config.model.imagenet_weights
                 load_checkpoint(checkpoint_path, model, strict=strict, map_location=device)
             elif mode == 'convert':
                 model.forward = model.forward_to_onnx
-        else:
+        elif config.model.model_size == 'small' and config.model.model_type==Mobilenet3:
             assert config.model.model_size == 'small'
             model = mobilenetv3_small(**parameters)
-
             if config.model.pretrained and mode == "train":
                 checkpoint_path = config.model.imagenet_weights
                 load_checkpoint(checkpoint_path, model, strict=strict, map_location=device)
             elif mode == 'convert':
                 model.forward = model.forward_to_onnx
-
+        elif config.model.model_type=='ResNet': #NEW
+            assert config.model.model_size=='50'
+            model = ResNet50(**parameters)
+            if config.model.pretrained:
+                checkpoint_path = config.model.imagenet_weights
+                load_checkpoint(checkpoint_path, model, strict=strict, map_location=device)
+            
         if (config.loss.loss_type == 'amsoftmax') and (config.loss.amsoftmax.margin_type != 'cross_entropy'):
             model.scaling = config.loss.amsoftmax.s
             model.spoofer[3] = AngleSimpleLinear(config.model.embeding_dim, 2)
@@ -306,10 +318,10 @@ class Transform():
         if self.transforms_quantity == 1:
             return self.train(image=img)
         if label:
-            return self.train_spoof(image=img)
+            return self.train_real(image=img) #CHANGING FOR CVPR2023 CODE
         else:
             assert label == 0
-            return self.train_real(image=img)
+            return self.train_spoof(image=img)
 
 def make_weights(config):
     '''load weights for imbalance dataset to list'''

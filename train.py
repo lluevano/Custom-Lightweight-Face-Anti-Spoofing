@@ -70,7 +70,7 @@ def train(config, device='cuda:0', save_chkpt=True):
                                                                                 contrast_limit=0.2,
                                                                                 brightness_by_max=True,
                                                                                 always_apply=False, p=0.3),
-                            A.augmentations.transforms.MotionBlur(blur_limit=5, p=0.2),
+                            A.augmentations.MotionBlur(blur_limit=5, p=0.2),
                             normalize
                             ])
     train_transform_spoof = A.Compose([
@@ -82,7 +82,7 @@ def train(config, device='cuda:0', save_chkpt=True):
                                                                                 contrast_limit=0.2,
                                                                                 brightness_by_max=True,
                                                                                 always_apply=False, p=0.3),
-                            A.augmentations.transforms.MotionBlur(blur_limit=5, p=0.2),
+                            A.augmentations.MotionBlur(blur_limit=5, p=0.2),
                             normalize
                             ])
     val_transform = A.Compose([

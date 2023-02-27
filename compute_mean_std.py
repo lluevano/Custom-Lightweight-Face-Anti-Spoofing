@@ -24,13 +24,13 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from datasets import CelebASpoofDataset
+from datasets.text_folder_dataset import TextFolderDataset
 from utils import Transform
 
 
 def main():
     parser = argparse.ArgumentParser(description='mean and std computing')
-    parser.add_argument('--root', type=str, default=None, required=True,
+    parser.add_argument('--root', type=str, default=None, required=False,
                         help='path to root folder of the CelebA_Spoof')
     parser.add_argument('--img_size', type=tuple, default=(128,128), required=False,
                         help='height and width of the image to resize')
@@ -41,9 +41,12 @@ def main():
                                 A.Normalize(mean=[0, 0, 0], std=[1, 1, 1])
                                 ])
     root_folder = args.root
-    train_dataset = CelebASpoofDataset(root_folder, test_mode=False,
-                                       transform=Transform(transforms),
-                                       multi_learning=False)
+    #train_dataset = CelebASpoofDataset(root_folder, test_mode=False,
+    #                                   transform=Transform(transforms),
+    #                                   multi_learning=False)
+    train_dataset = TextFolderDataset(root_folder="./datasets/FAS-CVPR2023",
+                     data_folder="",
+                     txt_filename="train_norm_crop.txt")
     dataloader = DataLoader(train_dataset, batch_size=100, shuffle=True)
     mean, std = compute_mean_std(dataloader)
     print(f'mean:{mean}, std:{std}')

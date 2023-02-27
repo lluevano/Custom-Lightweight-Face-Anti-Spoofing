@@ -82,6 +82,15 @@ def get_datasets(config):
                                                txt_filename=config.datasets.replay_attack.test_txt_filename),
                 'replay_attack_val': partial(TextFolderDataset, root_folder=config.datasets.replay_attack.root_folder,
                                               data_folder=config.datasets.replay_attack.val_data_folder,
-                                              txt_filename=config.datasets.replay_attack.val_txt_filename)
+                                              txt_filename=config.datasets.replay_attack.val_txt_filename),
+                'FASCVPR2023_train': partial(TextFolderDataset, root_folder=config.datasets.FASCVPR2023.root_folder,
+                                                data_folder=config.datasets.FASCVPR2023.train_data_folder,
+                                                txt_filename=config.datasets.FASCVPR2023.train_txt_filename),
+                'FASCVPR2023_val': partial(TextFolderDataset, root_folder=config.datasets.replay_attack.root_folder,
+                                              data_folder=config.datasets.replay_attack.val_data_folder,
+                                              txt_filename=config.datasets.replay_attack.val_txt_filename),
+                'FASCVPR2023_test': partial(TextFolderDataset, root_folder=config.datasets.replay_attack.root_folder,
+                                                data_folder=config.datasets.replay_attack.train_data_folder,
+                                                txt_filename=config.datasets.replay_attack.train_txt_filename),                                
                 }
     return datasets

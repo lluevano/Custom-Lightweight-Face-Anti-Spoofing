@@ -31,7 +31,7 @@ optimizer = dict(lr=0.005, momentum=0.9, weight_decay=5e-4)
 
 scheduler = dict(milestones=[20,40], gamma=0.2)
 
-data = dict(batch_size=256,
+data = dict(batch_size=128,
             data_loader_workers=8,
             sampler=None,
             pin_memory=True)
@@ -53,7 +53,7 @@ loss = dict(loss_type='amsoftmax',
 
 epochs = dict(start_epoch=0, max_epoch=71)
 
-model= dict(model_type='Mobilenet2',
+model= dict(model_type='Mobilenet3',
             model_size = 'large',
             width_mult = 1.0,
             pretrained=False,

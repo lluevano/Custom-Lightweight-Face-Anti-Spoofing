@@ -1,0 +1,12 @@
+accuracy on test data = 82.311
+AUC = 0.897
+EER = 17.31
+apcer = 17.96
+bpcer = 16.69
+acer = 17.33
+accuracy on test data = 82.385
+AUC = 0.897
+EER = 17.31
+apcer = 17.96
+bpcer = 16.7
+acer = 17.33
