@@ -1,6 +1,20 @@
 # Custom Lightweight Face Anti Spoofing
 This is a fork of Lightface Anti Spoofing by kprokofi: https://github.com/kprokofi/light-weight-face-anti-spoofing modified for our needs at Tec and CENATAV.
 
+## Add datasets
+
+Added [text_folder_dataset](./datasets/text_folder_dataset.py) to easily manage datasets with "image_path label" text files.
+
+## Adding new models
+
+Modified base mobilenet class for a generic anti-spoofer model class in [model_tools](./models/model_tools.py).
+
+## Support
+Added support for attr_dict in python 3.10
+
+The rest of this README comes from the original repository.
+
+--------
 # Lightweight Face Anti Spoofing
 Towards the solving anti-spoofing problem on RGB only data.
 ## Introduction
@@ -55,7 +69,7 @@ Note that the new folder will be created and named as `<old name>cropped`. So to
 To train on or evaluate the CASIA CEFA you just need to download it. The reader for this dataset supports not only RGB modality but the depth and IR too. Nevertheless, it's not the purpose of this project.
 
 If you want to use your own data, the next steps should be done:
-1) Prepare the reader for your dataset.
+1) Prepare the reader for youd datasetsr dataset.
 2) Import reader object to datasets/database.py file. Substitute `do_nothing` with your object in `external_reader=do_nothing` (35 line).
 3) In config, write any kwargs for train, validation, test protocol. If you do not have test data, you can just add the same parameters as for validation.
 Example: `external = dict(train=dict(data_root='...', mode='train', whatever=...), val=dict(data_root='...', mode='val', whatever=...), test=dict(...))`
