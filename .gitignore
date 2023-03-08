@@ -18,3 +18,4 @@ datasets/*/**/*
 __pycache__/
 predictions_CVPR.txt
 events.out.tfevents.*
+logs/**/*

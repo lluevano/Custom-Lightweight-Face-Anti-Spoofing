@@ -23,6 +23,109 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+
+class DYShiftMax(nn.Module):
+    def __init__(self, inp, oup, reduction=4, act_max=1.0, act_relu=True, init_a=[0.0, 0.0], init_b=[0.0, 0.0], relu_before_pool=False, g=None, expansion=False):
+        super(DYShiftMax, self).__init__()
+        self.oup = oup
+        self.act_max = act_max * 2
+        self.act_relu = act_relu
+        self.avg_pool = nn.Sequential(
+                nn.ReLU(inplace=True) if relu_before_pool == True else nn.Sequential(),
+                nn.AdaptiveAvgPool2d(1)
+            )
+
+        self.exp = 4 if act_relu else 2
+        self.init_a = init_a
+        self.init_b = init_b
+
+        # determine squeeze
+        squeeze = make_divisible(inp // reduction, 4)
+        if squeeze < 4:
+            squeeze = 4
+        print('reduction: {}, squeeze: {}/{}'.format(reduction, inp, squeeze))
+        print('init-a: {}, init-b: {}'.format(init_a, init_b))
+
+        self.fc = nn.Sequential(
+                nn.Linear(inp, squeeze),
+                nn.ReLU(inplace=True),
+                nn.Linear(squeeze, oup*self.exp),
+                h_sigmoid()
+        )
+        if g is None:
+            g = 1
+        self.g = g[1]
+        if self.g !=1  and expansion:
+            self.g = inp // self.g
+        print('group shuffle: {}, divide group: {}'.format(self.g, expansion))
+        self.gc = inp//self.g
+        index=torch.Tensor(range(inp)).view(1,inp,1,1)
+        index=index.view(1,self.g,self.gc,1,1)
+        indexgs = torch.split(index, [1, self.g-1], dim=1)
+        indexgs = torch.cat((indexgs[1], indexgs[0]), dim=1)
+        indexs = torch.split(indexgs, [1, self.gc-1], dim=2)
+        indexs = torch.cat((indexs[1], indexs[0]), dim=2)
+        self.index = indexs.view(inp).type(torch.LongTensor)
+        self.expansion = expansion
+
+    def forward(self, x):
+        x_in = x
+        x_out = x
+        
+        #Adapted for use inside SE block
+        if len(x_in.size()) == 2:
+            b, c = x_in.size()
+            y = x_in
+        else:
+            b, c, _, _ = x_in.size()
+            y = self.avg_pool(x_in).view(b, c)
+        
+        y = self.fc(y).view(b, self.oup*self.exp, 1, 1)
+        y = (y-0.5) * self.act_max
+
+        #n2, c2, h2, w2 = x_out.size() unused
+        if len(x_out.size()) == 2:
+            x2 = x_out[:,self.index]
+        else:
+            x2 = x_out[:,self.index,:,:]
+
+        if self.exp == 4:
+            a1, b1, a2, b2 = torch.split(y, self.oup, dim=1)
+
+            a1 = a1 + self.init_a[0]
+            a2 = a2 + self.init_a[1]
+
+            b1 = b1 + self.init_b[0]
+            b2 = b2 + self.init_b[1]
+
+            z1 = x_out * a1 + x2 * b1
+            z2 = x_out * a2 + x2 * b2
+
+            out = torch.max(z1, z2)
+
+        elif self.exp == 2:
+            a1, b1 = torch.split(y, self.oup, dim=1)
+            a1 = a1 + self.init_a[0]
+            b1 = b1 + self.init_b[0]
+            out = x_out * a1 + x2 * b1
+
+        return out
+
+
+def get_activation(name="relu", **kwargs):
+    print(f"Entered get_activation with {name}")
+    activation = nn.Sequential()
+    if name.lower() == "relu":
+        activation = nn.ReLU6(inplace=True)
+    elif name.lower()=="prelu":
+        activation = nn.PReLU()
+    elif name.lower() == "dyshiftmax":
+        activation = DYShiftMax(kwargs["inp"], kwargs["oup"], reduction=8, 
+                     act_max=2.0, act_relu=True, init_a=[1.0, 1.0], init_b=[0.0, 0.0], relu_before_pool=False, g=(0,4), expansion=False)
+    return activation
+        
+
+
 class Conv2d_cd(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1,
                  padding=1, dilation=1, groups=1, bias=False, theta=0):
@@ -96,7 +199,8 @@ class h_sigmoid(nn.Module):
     def __init__(self, inplace=True):
         super().__init__()
         self.relu = nn.ReLU6(inplace=inplace)
-
+        #self.prelu = nn.PReLU()
+        
     def forward(self, x):
         return self.relu(x + 3) / 6
 
@@ -111,12 +215,13 @@ class h_swish(nn.Module):
 
 
 class SELayer(nn.Module):
-    def __init__(self, channel, reduction=4):
+    def __init__(self, channel, reduction=4, activation="PReLU", **act_kwargs):
         super().__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
                 nn.Linear(channel, make_divisible(channel // reduction, 8)),
-                nn.ReLU(inplace=True),
+                #nn.ReLU(inplace=True),
+                get_activation(name="prelu", **(dict(inp=make_divisible(channel // reduction, 8), oup=channel))),
                 nn.Linear(make_divisible(channel // reduction, 8), channel),
                 h_sigmoid()
         )
@@ -176,7 +281,7 @@ def make_divisible(v, divisor, min_value=None):
     return new_v
 
 
-class MobileNet(nn.Module):
+class AntiSpoofModel(nn.Module):
     """parent class for mobilenets"""
     def __init__(self, width_mult, prob_dropout, type_dropout,
                  prob_dropout_linear, embeding_dim, mu, sigma,

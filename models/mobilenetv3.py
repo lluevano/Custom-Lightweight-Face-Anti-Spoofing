@@ -24,7 +24,7 @@ from .model_tools import *
 
 class InvertedResidual(nn.Module):
     def __init__(self, inp, hidden_dim, oup, kernel_size, stride,
-                 use_se, use_hs, prob_dropout, type_dropout, sigma, mu):
+                 use_se, use_hs, prob_dropout, type_dropout, sigma, mu, activation="prelu"):
         super().__init__()
         assert stride in [1, 2]
         self.identity = stride == 1 and inp == oup
@@ -37,9 +37,9 @@ class InvertedResidual(nn.Module):
                 nn.Conv2d(hidden_dim, hidden_dim, kernel_size, stride,
                          (kernel_size - 1) // 2, groups=hidden_dim, bias=False),
                 nn.BatchNorm2d(hidden_dim),
-                h_swish() if use_hs else nn.ReLU(inplace=True),
+                h_swish() if use_hs else get_activation(name=activation, **(dict(inp=hidden_dim, oup=hidden_dim))),
                 # Squeeze-and-Excite
-                SELayer(hidden_dim) if use_se else nn.Identity(),
+                SELayer(hidden_dim, activation=activation) if use_se else nn.Identity(),
                 # pw-linear
                 nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(oup),
@@ -49,14 +49,14 @@ class InvertedResidual(nn.Module):
                 # pw
                 nn.Conv2d(inp, hidden_dim, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(hidden_dim),
-                h_swish() if use_hs else nn.ReLU(inplace=True),
+                h_swish() if use_hs else get_activation(name=activation, **(dict(inp=hidden_dim, oup=hidden_dim))),
                 # dw
                 nn.Conv2d(hidden_dim, hidden_dim, kernel_size, stride,
                          (kernel_size - 1) // 2, groups=hidden_dim, bias=False),
                 nn.BatchNorm2d(hidden_dim),
                 # Squeeze-and-Excite
-                SELayer(hidden_dim) if use_se else nn.Identity(),
-                h_swish() if use_hs else nn.ReLU(inplace=True),
+                SELayer(hidden_dim, activation=activation) if use_se else nn.Identity(),
+                h_swish() if use_hs else get_activation(name=activation, **(dict(inp=hidden_dim, oup=hidden_dim))),
                 # pw-linear
                 nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(oup),
@@ -69,8 +69,8 @@ class InvertedResidual(nn.Module):
             return self.dropout2d(self.conv(x))
 
 
-class MobileNetV3(MobileNet):
-    def __init__(self, cfgs, mode, **kwargs):
+class MobileNetV3(AntiSpoofModel):
+    def __init__(self, cfgs, mode, activation="prelu", **kwargs):
         super().__init__(**kwargs)
         self.cfgs = cfgs
         # setting of inverted residual blocks
@@ -87,7 +87,8 @@ class MobileNetV3(MobileNet):
                                                                 prob_dropout=self.prob_dropout,
                                                                 mu=self.mu,
                                                                 sigma=self.sigma,
-                                                                type_dropout=self.type_dropout))
+                                                                type_dropout=self.type_dropout,
+                                                                activation=activation))
             input_channel = output_channel
         self.features = nn.Sequential(*layers)
         self.conv_last = conv_1x1_bn(input_channel, self.embeding_dim)
@@ -134,8 +135,7 @@ class MobileNetV3(MobileNet):
                 nn.Linear(self.embeding_dim, 40),
             )
 
-
-def mobilenetv3_large(**kwargs):
+def mobilenetv3_large(activation="prelu", **kwargs):
     """
     Constructs a MobileNetV3-Large model
     """
@@ -157,7 +157,7 @@ def mobilenetv3_large(**kwargs):
         [5,   6, 160, 1, 1, 1],
         [5,   6, 160, 1, 1, 1]
     ]
-    return MobileNetV3(cfgs, mode='large', **kwargs)
+    return MobileNetV3(cfgs, mode='large', activation=activation, **kwargs)
 
 def mobilenetv3_small(**kwargs):
     """

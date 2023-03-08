@@ -77,7 +77,7 @@ def main():
         print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
         print('{:<30}  {:<8}'.format('Number of parameters: ', params))
 
-    exit(0)    
+    #exit(0)    
     # preprocessing, making dataset and loader
     
     normalize = A.Normalize(**config.img_norm_cfg)

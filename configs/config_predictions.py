@@ -47,7 +47,7 @@ data = dict(batch_size=1024,
 
 resize = dict(height=224, width=224)
 
-checkpoint = dict(snapshot_name="ResNet_50_CVPR2023.pth.tar",
+checkpoint = dict(snapshot_name="Mobilenet3_large_CVPR2023_prelu.pth.tar",
                   experiment_path='./logs')
 
 loss = dict(loss_type='amsoftmax',
@@ -62,11 +62,11 @@ loss = dict(loss_type='amsoftmax',
 
 epochs = dict(start_epoch=0, max_epoch=71)
 
-model= dict(model_type='ResNet',
-            model_size = '50',
-            width_mult = None,
+model= dict(model_type='Mobilenet3',
+            model_size = 'large',
+            width_mult = 1.25,
             pretrained=False,
-            embeding_dim=1024,
+            embeding_dim=1280,
             imagenet_weights=None
             )
 

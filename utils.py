@@ -36,8 +36,6 @@ from torch.utils.data import DataLoader
 from datasets import get_datasets
 from losses import (AMSoftmaxLoss, AngleSimpleLinear, SoftTripleLinear,
                     SoftTripleLoss)
-from models import mobilenetv2, mobilenetv3_large, mobilenetv3_small, ResNet50
-
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -241,49 +239,56 @@ def build_model(config, device, strict=True, mode='train'):
                     multi_heads = config.multi_task_learning)
 
     if config.model.model_type == 'Mobilenet2':
+        from models import mobilenetv2
         model = mobilenetv2(**parameters)
-
-        if config.model.pretrained and mode == "train":
-            checkpoint_path = config.model.imagenet_weights
-            load_checkpoint(checkpoint_path, model, strict=strict, map_location=device)
-        elif mode == 'convert':
-            model.forward = model.forward_to_onnx
-
-        if (config.loss.loss_type == 'amsoftmax') and (config.loss.amsoftmax.margin_type != 'cross_entropy'):
-            model.spoofer = AngleSimpleLinear(config.model.embeding_dim, 2)
-        elif config.loss.loss_type == 'soft_triple':
-            model.spoofer = SoftTripleLinear(config.model.embeding_dim, 2,
-                                             num_proxies=config.loss.soft_triple.K)
-    else:
-        assert config.model.model_type == 'Mobilenet3'or config.model.model_type=='ResNet'
-        if config.model.model_size == 'large' and config.model.model_type=='Mobilenet3':
-            model = mobilenetv3_large(**parameters)
-            if config.model.pretrained and mode == "train":
-                checkpoint_path = config.model.imagenet_weights
-                load_checkpoint(checkpoint_path, model, strict=strict, map_location=device)
-            elif mode == 'convert':
-                model.forward = model.forward_to_onnx
-        elif config.model.model_size == 'small' and config.model.model_type==Mobilenet3:
-            assert config.model.model_size == 'small'
-            model = mobilenetv3_small(**parameters)
-            if config.model.pretrained and mode == "train":
-                checkpoint_path = config.model.imagenet_weights
-                load_checkpoint(checkpoint_path, model, strict=strict, map_location=device)
-            elif mode == 'convert':
-                model.forward = model.forward_to_onnx
-        elif config.model.model_type=='ResNet': #NEW
-            assert config.model.model_size=='50'
-            model = ResNet50(**parameters)
-            if config.model.pretrained:
-                checkpoint_path = config.model.imagenet_weights
-                load_checkpoint(checkpoint_path, model, strict=strict, map_location=device)
+        
+    elif config.model.model_type == 'Mobilenet3':
+        if config.model.model_size == 'large':
+            from models import mobilenetv3_large
+            model = mobilenetv3_large(config.activation, **parameters)
             
+        elif config.model.model_size == 'small':
+            from models import mobilenetv3_small
+            model = mobilenetv3_small(**parameters)
+        else:
+            raise "Model type not implemented"
+        #Custom spoofer in model definition
         if (config.loss.loss_type == 'amsoftmax') and (config.loss.amsoftmax.margin_type != 'cross_entropy'):
             model.scaling = config.loss.amsoftmax.s
             model.spoofer[3] = AngleSimpleLinear(config.model.embeding_dim, 2)
         elif config.loss.loss_type == 'soft_triple':
             model.scaling = config.loss.soft_triple.s
             model.spoofer[3] = SoftTripleLinear(config.model.embeding_dim, 2, num_proxies=config.loss.soft_triple.K)
+            
+    elif config.model.model_type=='ResNet': #NEW
+        from models import ResNet50
+        assert config.model.model_size=='50'
+        model = ResNet50(**parameters)
+    
+    elif config.model.model_type=='Micronet':
+        from models import micronet
+        model = micronet(config.model.model_size, config.resize, **parameters)
+        if model is None:
+            print("Model is None")
+            exit()
+    
+    else:
+        raise "Model not implemented"
+            
+    # Not using custom spoofer with dropout
+    if config.model.model_type != 'Mobilenet3':
+        if (config.loss.loss_type == 'amsoftmax') and (config.loss.amsoftmax.margin_type != 'cross_entropy'):
+            model.spoofer = AngleSimpleLinear(config.model.embeding_dim, 2)
+        elif config.loss.loss_type == 'soft_triple':
+            model.spoofer = SoftTripleLinear(config.model.embeding_dim, 2,
+                                                 num_proxies=config.loss.soft_triple.K)
+    
+    if config.model.pretrained and mode == "train":
+        checkpoint_path = config.model.imagenet_weights
+        load_checkpoint(checkpoint_path, model, strict=strict, map_location=device)
+    elif mode == 'convert':
+        model.forward = model.forward_to_onnx
+                        
     return model
 
 def build_criterion(config, device, task='main'):

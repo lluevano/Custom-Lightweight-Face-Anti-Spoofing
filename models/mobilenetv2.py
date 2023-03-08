@@ -65,7 +65,7 @@ class InvertedResidual(nn.Module):
             return self.dropout2d(self.conv(x))
 
 
-class MobileNetV2(MobileNet):
+class MobileNetV2(AntiSpoofModel):
     def __init__(self, cfgs, **kwargs):
         super().__init__(**kwargs)
         # setting of inverted residual blocks

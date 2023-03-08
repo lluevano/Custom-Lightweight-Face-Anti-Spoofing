@@ -19,7 +19,11 @@ replay_attack_files = dict(root_folder="./datasets/replay-attack_training",
                      
 FASCVPR2023_files = dict(root_folder="./datasets/FAS-CVPR2023",
                      train_data_folder="",
-                     train_txt_filename="train_norm_crop.txt")
+                     train_txt_filename="split_train.txt", #prev was train_norm_crop.txt
+                     test_data_folder="",
+                     test_txt_filename="split_val.txt",
+                     val_data_folder="",
+                     val_txt_filename="split_val.txt")
 
 datasets = dict(LCCFASD_root='./LCC_FASDcropped',
                 Celeba_root='/home/lusantlueg/Documents/light-weight-face-anti-spoofing/datasets/CelebA_Spoof/',
@@ -40,7 +44,7 @@ optimizer = dict(lr=0.1, momentum=0.9, weight_decay=5e-4)
 
 scheduler = dict(milestones=[20,40], gamma=0.2)
 
-data = dict(batch_size=1024,
+data = dict(batch_size=512,
             data_loader_workers=16,
             sampler=None,
             pin_memory=True)
@@ -60,15 +64,17 @@ loss = dict(loss_type='amsoftmax',
 
 epochs = dict(start_epoch=0, max_epoch=71)
 
-model= dict(model_type='ResNet',
-            model_size = '50',
-            width_mult = None,
+activation="DYShiftMax"
+
+model= dict(model_type='Mobilenet3',
+            model_size = 'large',
+            width_mult = 1.25,
             pretrained=False,
-            embeding_dim=1024,
+            embeding_dim=1280,
             imagenet_weights=None
             )
             
-checkpoint = dict(snapshot_name=f"{model['model_type']}_{model['model_size']}_CVPR2023.pth.tar",
+checkpoint = dict(snapshot_name=f"{model['model_type']}_{model['model_size']}_CVPR2023_prelu.pth.tar",
                   experiment_path='./logs')
 
 aug = dict(type_aug=None,
@@ -79,7 +85,7 @@ aug = dict(type_aug=None,
 curves = dict(det_curve='det_curve_0.png',
               roc_curve='roc_curve_0.png')
 
-dropout = dict(prob_dropout=0.1,
+dropout = dict(prob_dropout=0.1, #ignoring on micronet
                classifier=0.35,
                type='bernoulli',
                mu=0.5,
@@ -92,6 +98,6 @@ RSC = dict(use_rsc=False,
            p=0.333,
            b=0.333)
 
-test_dataset = dict(type='replay_attack')
+test_dataset = dict(type='FASCVPR2023')
 
 conv_cd = dict(theta=0)
