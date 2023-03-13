@@ -16,6 +16,8 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE.'''
 
+#Example usage: CUDA_VISIBLE_DEVICES=0 python infer_img.py --config ./configs/config_infer.py --img_path ./datasets/FAS-CVPR2023/dev/data/000001.jpg
+
 import argparse
 import os
 
