@@ -44,7 +44,7 @@ optimizer = dict(lr=0.1, momentum=0.9, weight_decay=5e-4)
 
 scheduler = dict(milestones=[20,40], gamma=0.2)
 
-data = dict(batch_size=512,
+data = dict(batch_size=1024,
             data_loader_workers=16,
             sampler=None,
             pin_memory=True)
@@ -66,15 +66,15 @@ epochs = dict(start_epoch=0, max_epoch=71)
 
 activation="DYShiftMax"
 
-model= dict(model_type='Mobilenet3',
-            model_size = 'large',
-            width_mult = 1.25,
+model= dict(model_type='Micronet',
+            model_size = 'M2',
+            width_mult = None,
             pretrained=False,
             embeding_dim=1280,
             imagenet_weights=None
             )
             
-checkpoint = dict(snapshot_name=f"{model['model_type']}_{model['model_size']}_CVPR2023_prelu.pth.tar",
+checkpoint = dict(snapshot_name=f"{model['model_type']}_{model['model_size']}_CVPR2023.pth.tar",
                   experiment_path='./logs')
 
 aug = dict(type_aug=None,

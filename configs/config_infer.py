@@ -85,7 +85,7 @@ dropout = dict(prob_dropout=0.1,
                mu=0.5,
                sigma=0.3)
 
-data_parallel = dict(use_parallel=True,
+data_parallel = dict(use_parallel=False,
                      parallel_params=dict(device_ids=[0,1], output_device=0))
 
 RSC = dict(use_rsc=False,

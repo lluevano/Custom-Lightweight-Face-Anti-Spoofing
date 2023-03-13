@@ -66,18 +66,18 @@ def main():
     path_to_experiment = os.path.join(config.checkpoint.experiment_path, config.checkpoint.snapshot_name)
     epoch_of_checkpoint = load_checkpoint(path_to_experiment, model, map_location=device, optimizer=None, strict=False)
     
-    #from fvcore.nn import FlopCountAnalysis
-    #flops = FlopCountAnalysis(model, torch.ones([1,3,224,224],dtype=torch.float32, device=torch.device('cuda:0')))
-    #print(flops.total())
+    from fvcore.nn import FlopCountAnalysis
+    flops = FlopCountAnalysis(model, torch.ones([1,3,224,224],dtype=torch.float32, device=torch.device('cuda:0')))
+    print(flops.total())
 
-    from ptflops import get_model_complexity_info
+#    from ptflops import get_model_complexity_info
    
-    with torch.cuda.device(0):     
-        macs, params = get_model_complexity_info(model.module, (3, 224, 224), as_strings=True, print_per_layer_stat=True, verbose=True)
-        print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
-        print('{:<30}  {:<8}'.format('Number of parameters: ', params))
+#    with torch.cuda.device(0):     
+#        macs, params = get_model_complexity_info(model.module, (3, 224, 224), as_strings=True, print_per_layer_stat=True, verbose=True)
+#        print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
+#        print('{:<30}  {:<8}'.format('Number of parameters: ', params))
 
-    #exit(0)    
+    exit(0)    
     # preprocessing, making dataset and loader
     
     normalize = A.Normalize(**config.img_norm_cfg)

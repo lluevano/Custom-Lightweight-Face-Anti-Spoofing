@@ -245,7 +245,7 @@ def build_model(config, device, strict=True, mode='train'):
     elif config.model.model_type == 'Mobilenet3':
         if config.model.model_size == 'large':
             from models import mobilenetv3_large
-            model = mobilenetv3_large(config.activation, **parameters)
+            model = mobilenetv3_large(config.activation,**parameters)
             
         elif config.model.model_size == 'small':
             from models import mobilenetv3_small

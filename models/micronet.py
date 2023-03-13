@@ -38,6 +38,41 @@ def _make_divisible(v, divisor, min_value=None):
         new_v += divisor
     return new_v
 
+class Dropout(nn.Module):
+    DISTRIBUTIONS = ['bernoulli', 'gaussian', 'none']
+
+    def __init__(self, p=0.5, mu=0.5, sigma=0.3, dist='bernoulli', linear=False):
+        super().__init__()
+
+        self.dist = dist
+        assert self.dist in Dropout.DISTRIBUTIONS
+
+        self.p = float(p)
+        assert 0. <= self.p <= 1.
+
+        self.mu = float(mu)
+        self.sigma = float(sigma)
+        assert self.sigma > 0.
+        # need to distinct 2d and 1d dropout
+        self.linear = linear
+    def forward(self, x):
+        if self.dist == 'bernoulli' and not self.linear:
+            out = F.dropout2d(x, self.p, self.training)
+        elif self.dist == 'bernoulli' and self.linear:
+            out = F.dropout(x, self.p, self.training)
+        elif self.dist == 'gaussian':
+            if self.training:
+                with torch.no_grad():
+                    soft_mask = x.new_empty(x.size()).normal_(self.mu, self.sigma).clamp_(0., 1.)
+
+                scale = 1. / self.mu
+                out = scale * soft_mask * x
+            else:
+                out = x
+        else:
+            out = x
+
+        return out
 
 ########################################################################
 # sigmoid and tanh
@@ -102,7 +137,7 @@ class SELayer(nn.Module):
 
         # determine squeeze
         squeeze = get_squeeze_channels(inp, reduction)
-        print('reduction: {}, squeeze: {}/{}'.format(reduction, inp, squeeze))
+        #print('reduction: {}, squeeze: {}/{}'.format(reduction, inp, squeeze))
 
 
         self.fc = nn.Sequential(
@@ -143,8 +178,8 @@ class DYShiftMax(nn.Module):
         squeeze = _make_divisible(inp // reduction, 4)
         if squeeze < 4:
             squeeze = 4
-        print('reduction: {}, squeeze: {}/{}'.format(reduction, inp, squeeze))
-        print('init-a: {}, init-b: {}'.format(init_a, init_b))
+        #print('reduction: {}, squeeze: {}/{}'.format(reduction, inp, squeeze))
+        #print('init-a: {}, init-b: {}'.format(init_a, init_b))
 
         self.fc = nn.Sequential(
                 nn.Linear(inp, squeeze),
@@ -157,7 +192,7 @@ class DYShiftMax(nn.Module):
         self.g = g[1]
         if self.g !=1  and expansion:
             self.g = inp // self.g
-        print('group shuffle: {}, divide group: {}'.format(self.g, expansion))
+        #print('group shuffle: {}, divide group: {}'.format(self.g, expansion))
         self.gc = inp//self.g
         index=torch.Tensor(range(inp)).view(1,inp,1,1)
         index=index.view(1,self.g,self.gc,1,1)
@@ -362,7 +397,7 @@ class GroupConv(nn.Module):
         self.inp = inp
         self.oup = oup
         self.groups = groups
-        print('inp: %d, oup:%d, g:%d' % (inp, oup, self.groups[0]))
+        #print('inp: %d, oup:%d, g:%d' % (inp, oup, self.groups[0]))
         self.conv = nn.Sequential(
             nn.Conv2d(inp, oup, 1, 1, 0, bias=False, groups=self.groups[0]),
             nn.BatchNorm2d(oup)
@@ -504,7 +539,7 @@ class DYMicroBlock(nn.Module):
                  depthsep=True, shuffle=False, pointwise='fft', activation_cfg=None):
         super(DYMicroBlock, self).__init__()
 
-        print(activation_cfg.dy)
+        #print(activation_cfg.dy)
 
         self.identity = stride == 1 and inp == oup
 
@@ -656,7 +691,7 @@ class MicroNet(AntiSpoofModel):
         stem_ch = cfg["stem_ch"]
         stem_dilation = 1 #cfg.MODEL.MICRONETS.STEM_DILATION
         stem_groups = cfg["stem_groups"]
-        out_ch = cfg["out_ch"]
+        out_ch = self.embeding_dim
         depthsep = True #cfg.MODEL.MICRONETS.DEPTHSEP
         shuffle = True #cfg.MODEL.MICRONETS.SHUFFLE
         pointwise = "group" #cfg.MODEL.MICRONETS.POINTWISE
@@ -683,8 +718,8 @@ class MicroNet(AntiSpoofModel):
             mode=stem_mode,
             groups=stem_groups
         )]
-        print("CONFIG")
-        print(self.cfgs)
+        #print("CONFIG")
+        #print(self.cfgs)
         for idx, val in enumerate(self.cfgs):
             s, n, c, ks, c1, c2, g1, g2, c3, g3, g4, y1, y2, y3, r = val
 
@@ -720,8 +755,8 @@ class MicroNet(AntiSpoofModel):
                                     activation_cfg=activation_cfg,
                                     ))
                 input_channel = output_channel
-        print("Layers")
-        print(layers)
+        #print("Layers")
+        #print(layers)
         self.features = nn.Sequential(*layers)
 
         self.avgpool = nn.Sequential(
@@ -732,10 +767,16 @@ class MicroNet(AntiSpoofModel):
 
         # building last several layers
         output_channel = out_ch
-
+        
+        
         self.spoofer = nn.Sequential(
             SwishLinear(input_channel, output_channel),
-            nn.Dropout(dropout_rate),
+            #nn.Dropout(dropout_rate),
+            Dropout(p=self.prob_dropout_linear,
+                    mu=self.mu,
+                    sigma=self.sigma,
+                    dist=self.type_dropout,
+                    linear=True),
             SwishLinear(output_channel, 2)
         )
         self._initialize_weights()
@@ -771,12 +812,12 @@ def micronet(model_size, input_size, **kwargs):
     """
     
     # width = ""
-    out_ch = kwargs["embeding_dim"] #from kwargs
+    #out_ch = kwargs["embeding_dim"] #from kwargs
     #print(input_size)
     _cfg = {"M0":{"net_config": "msnx_dy6_exp4_4M_221", "stem_ch": 4, "stem_groups":(2,2), "out_ch": 640, "dropout": 0.05, "init_a":(1.0,1.0), "init_b": (0.0,0.0)},
             "M1":{"net_config": "msnx_dy6_exp6_6M_221", "stem_ch": 6, "stem_groups":(3,2), "out_ch": 960, "dropout": 0.05, "init_a":(1.0,1.0), "init_b": (0.0,0.0)},
-            "M2":{"net_config": "msnx_dy9_exp6_12M_221", "stem_ch": 8, "stem_groups":(4,2), "out_ch": 1024, "dropout": 1.0, "init_a":(1.0,1.0), "init_b": (0.0,0.0)},
-            "M3":{"net_config": "msnx_dy12_exp6_20M_020", "stem_ch": 12, "stem_groups":(4,3), "out_ch": 1024, "dropout": 1.0, "init_a":(1.0,0.5), "init_b": (0.0,0.5)},
+            "M2":{"net_config": "msnx_dy9_exp6_12M_221", "stem_ch": 8, "stem_groups":(4,2), "out_ch": 1024, "dropout": 0.1, "init_a":(1.0,1.0), "init_b": (0.0,0.0)},
+            "M3":{"net_config": "msnx_dy12_exp6_20M_020", "stem_ch": 12, "stem_groups":(4,3), "out_ch": 1024, "dropout": 0.1, "init_a":(1.0,0.5), "init_b": (0.0,0.5)},
             }
     
     return MicroNet(_cfg[model_size], input_size, **kwargs)
