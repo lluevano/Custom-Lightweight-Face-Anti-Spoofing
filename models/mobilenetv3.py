@@ -159,7 +159,7 @@ def mobilenetv3_large(activation="prelu", **kwargs):
     ]
     return MobileNetV3(cfgs, mode='large', activation=activation, **kwargs)
 
-def mobilenetv3_small(**kwargs):
+def mobilenetv3_small(activation="prelu", **kwargs):
     """
     Constructs a MobileNetV3-Small model
     """
@@ -178,4 +178,4 @@ def mobilenetv3_small(**kwargs):
         [5,    6,  96, 1, 1, 1],
     ]
 
-    return MobileNetV3(cfgs, mode='small', **kwargs)
+    return MobileNetV3(cfgs, mode='small', activation=activation, **kwargs)

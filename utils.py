@@ -245,11 +245,11 @@ def build_model(config, device, strict=True, mode='train'):
     elif config.model.model_type == 'Mobilenet3':
         if config.model.model_size == 'large':
             from models import mobilenetv3_large
-            model = mobilenetv3_large(config.activation,**parameters)
+            model = mobilenetv3_large(config.activation, **parameters)
             
         elif config.model.model_size == 'small':
             from models import mobilenetv3_small
-            model = mobilenetv3_small(**parameters)
+            model = mobilenetv3_small(config.activation, **parameters)
         else:
             raise "Model type not implemented"
         #Custom spoofer in model definition
@@ -268,9 +268,6 @@ def build_model(config, device, strict=True, mode='train'):
     elif config.model.model_type=='Micronet':
         from models import micronet
         model = micronet(config.model.model_size, config.resize, **parameters)
-        if model is None:
-            print("Model is None")
-            exit()
     
     else:
         raise "Model not implemented"
