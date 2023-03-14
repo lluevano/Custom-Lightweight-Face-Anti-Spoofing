@@ -691,7 +691,7 @@ class MicroNet(AntiSpoofModel):
         stem_ch = cfg["stem_ch"]
         stem_dilation = 1 #cfg.MODEL.MICRONETS.STEM_DILATION
         stem_groups = cfg["stem_groups"]
-        out_ch = self.embeding_dim
+        out_ch = cfg["out_ch"] #self.embeding_dim
         depthsep = True #cfg.MODEL.MICRONETS.DEPTHSEP
         shuffle = True #cfg.MODEL.MICRONETS.SHUFFLE
         pointwise = "group" #cfg.MODEL.MICRONETS.POINTWISE
@@ -771,12 +771,12 @@ class MicroNet(AntiSpoofModel):
         
         self.spoofer = nn.Sequential(
             SwishLinear(input_channel, output_channel),
-            #nn.Dropout(dropout_rate),
-            Dropout(p=self.prob_dropout_linear,
-                    mu=self.mu,
-                    sigma=self.sigma,
-                    dist=self.type_dropout,
-                    linear=True),
+            nn.Dropout(dropout_rate),
+            #Dropout(p=self.prob_dropout_linear,
+            #        mu=self.mu,
+            #        sigma=self.sigma,
+            #        dist=self.type_dropout,
+            #        linear=True),
             SwishLinear(output_channel, 2)
         )
         self._initialize_weights()

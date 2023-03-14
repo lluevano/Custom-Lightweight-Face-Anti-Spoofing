@@ -19,7 +19,7 @@ replay_attack_files = dict(root_folder="./datasets/replay-attack_training",
                      
 FASCVPR2023_files = dict(root_folder="./datasets/FAS-CVPR2023",
                      train_data_folder="",
-                     train_txt_filename="split_train.txt", #prev was train_norm_crop.txt
+                     train_txt_filename="train_norm_crop.txt", #prev was train_norm_crop.txt , split_train.txt
                      test_data_folder="",
                      test_txt_filename="split_val.txt",
                      val_data_folder="",
@@ -67,10 +67,10 @@ epochs = dict(start_epoch=0, max_epoch=71)
 activation="DYShiftMax"
 
 model= dict(model_type='Micronet',
-            model_size = 'M2',
+            model_size = 'M3',
             width_mult = None,
             pretrained=False,
-            embeding_dim=1280,
+            embeding_dim=1280, #ignored
             imagenet_weights=None
             )
             

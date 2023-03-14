@@ -268,6 +268,10 @@ def build_model(config, device, strict=True, mode='train'):
     elif config.model.model_type=='Micronet':
         from models import micronet
         model = micronet(config.model.model_size, config.resize, **parameters)
+   
+    elif config.model.model_type=='ShuffleNetV2':
+        from models import get_ShuffleNetV2_model
+        model = get_ShuffleNetV2_model(activation=config.activation, **parameters)
     
     else:
         raise "Model not implemented"
