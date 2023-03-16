@@ -4,6 +4,8 @@ dataset = 'FASCVPR2023'
 
 multi_task_learning = False
 
+multi_spoof = True
+
 evaluation = True
 
 test_steps = None
@@ -19,7 +21,7 @@ replay_attack_files = dict(root_folder="./datasets/replay-attack_training",
                      
 FASCVPR2023_files = dict(root_folder="./datasets/FAS-CVPR2023",
                      train_data_folder="",
-                     train_txt_filename="train_norm_crop.txt", #prev was train_norm_crop.txt , split_train.txt
+                     train_txt_filename="train_norm_crop_multi.txt", #prev was train_norm_crop.txt , split_train.txt
                      test_data_folder="",
                      test_txt_filename="split_val.txt",
                      val_data_folder="",
@@ -64,11 +66,11 @@ loss = dict(loss_type='amsoftmax',
 
 epochs = dict(start_epoch=0, max_epoch=71)
 
-activation="DYShiftMax"
+activation="prelu"
 
-model= dict(model_type='Micronet',
-            model_size = 'M3',
-            width_mult = None,
+model= dict(model_type='Mobilenet3',
+            model_size = 'large',
+            width_mult = 1.25,
             pretrained=False,
             embeding_dim=1280, #ignored
             imagenet_weights=None

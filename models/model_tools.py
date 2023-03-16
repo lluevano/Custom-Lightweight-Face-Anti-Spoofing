@@ -295,7 +295,8 @@ class AntiSpoofModel(nn.Module):
         self.mu = mu
         self.sigma = sigma
         self.theta = theta
-        self.multi_heads = multi_heads
+        self.multi_heads = multi_heads[0]
+        self.multi_spoof = multi_heads[1]
         self.features = nn.Identity
 
         # building last several layers
@@ -306,6 +307,8 @@ class AntiSpoofModel(nn.Module):
             self.lightning = nn.Linear(embeding_dim, 5)
             self.spoof_type = nn.Linear(embeding_dim, 11)
             self.real_atr = nn.Linear(embeding_dim, 40)
+        elif self.multi_spoof:
+            self.spoof_type = nn.Linear(embeding_dim, 4)
 
     def forward(self, x):
         x = self.features(x)
@@ -314,14 +317,19 @@ class AntiSpoofModel(nn.Module):
         return x
 
     def make_logits(self, features, all=False):
-        all = all if self.multi_heads else False
+        all = all if self.multi_heads or self.multi_spoof else False
         output = features.view(features.size(0), -1)
         spoof_out = self.spoofer(output)
-        if all:
+        if all and self.multi_heads:
             type_spoof = self.spoof_type(output)
             lightning_type = self.lightning(output)
             real_atr = torch.sigmoid(self.real_atr(output))
             return spoof_out, type_spoof, lightning_type, real_atr
+        
+        elif all and self.multi_spoof:
+            type_spoof = self.spoof_type(output)
+            return spoof_out, type_spoof
+        
         return spoof_out
 
     def forward_to_onnx(self,x, scaling=1):

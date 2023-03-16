@@ -83,12 +83,17 @@ class Trainer:
                                                 target_a, target_b, lam, 2)
             else:
                 new_target = (F.one_hot(target[:,0], num_classes=2)
-                            if self.config.multi_task_learning
+                            if self.config.multi_task_learning or self.config.multi_spoof
                             else F.one_hot(target, num_classes=2))
                 output = self.make_output(input_, new_target)
-                loss = (self.multi_task_criterion(output, target)
-                        if self.config.multi_task_learning
-                        else self.criterion(output, new_target))
+                
+                if self.config.multi_task_learning:
+                    loss = self.multi_task_criterion(output, target)
+                elif self.config.multi_spoof:
+                    loss = self.multi_spoof_criterion(output, target)
+                else:
+                    loss = self.criterion(output, new_target)
+
 
             # compute gradient and do SGD step
             self.optimizer.zero_grad()
@@ -98,7 +103,7 @@ class Trainer:
             # measure accuracy
             s = self.config.loss.amsoftmax.s
             acc = (precision(output[0], target[:,0].reshape(-1), s)
-                  if self.config.multi_task_learning
+                  if self.config.multi_task_learning or self.config.multi_spoof
                   else precision(output, target, s))
             # record loss
             losses.update(loss.item(), input_.size(0))
@@ -125,7 +130,7 @@ class Trainer:
         # switch to evaluation mode and inference the model
         self.model.eval()
         loop = tqdm(enumerate(self.val_loader), total=len(self.val_loader), leave=False)
-        criterion = self.criterion[0] if self.config.multi_task_learning else self.criterion
+        criterion = self.criterion[0] if self.config.multi_task_learning or self.config.multi_spoof else self.criterion
         for i, (input_, target) in loop:
             if i == self.config.test_steps:
                 break
@@ -296,6 +301,31 @@ class Trainer:
             real_atr_loss = bce(filtered_output, filtered_target)
         # combine losses
         loss = C*spoof_loss + Cs*spoof_type_loss + Ci*lightning_loss + Cf*real_atr_loss
+        return loss
+
+    def multi_spoof_criterion(self, output: tuple, target: torch.tensor,
+                             C: float=1., Cs: float=0.5):
+        ''' output -> tuple of given losses
+        target -> torch tensor of a shape [batch*num_tasks]
+        return loss function '''
+        softmax, cross_entropy = self.criterion
+        
+        # spoof loss, take derivitive
+        spoof_target = F.one_hot(target[:,0], num_classes=2)
+        spoof_type_target = F.one_hot(target[:,1], num_classes=4)
+        #lightning_target = F.one_hot(target[:,2], num_classes=5)
+
+        # compute losses
+        spoof_loss = softmax(output[0], spoof_target)
+        #print(output[1].shape)
+        #print(output[1])
+        #print(spoof_type_target.shape)
+        #print(spoof_type_target)
+        spoof_type_loss = cross_entropy(output[1], spoof_type_target)
+        #lightning_loss = cross_entropy(output[2], lightning_target)
+
+        # combine losses
+        loss = C*spoof_loss + Cs*spoof_type_loss
         return loss
 
     @staticmethod

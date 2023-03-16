@@ -34,7 +34,12 @@ class TextFolderDataset(Dataset):
         self.data_folder = data_folder
 
         list_path = os.path.join(root_folder, txt_filename)
-        self.data = pd.read_csv(list_path, sep=" ", header=None, names=["filename", "class"])
+        
+        if multi_learning:
+            col_names = ["filename", "class", "class2"]
+        else:
+            col_names = ["filename", "class"]
+        self.data = pd.read_csv(list_path, sep=" ", header=None, names=col_names)
         #print(root_folder)
         #print(txt_filename)
         #print(self.data)
@@ -55,15 +60,20 @@ class TextFolderDataset(Dataset):
             return None
 
         img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        
 
         if self.multi_learning:
-            raise "Multi learning not implemented error"
+            label1 = int(self.data["class"][idx])
+            label2 = int(self.data["class2"][idx])
+            label = [label1, label2]
         else:
             if math.isnan(self.data["class"][idx]):
                 label = idx
             else:
                 label = int(self.data["class"][idx])
+        
         if self.transform:
-            img = self.transform(label=label, img=img)['image']
+            img = self.transform(label=label[0] if isinstance(label, list) else label, img=img)['image']
         img = np.transpose(img, (2, 0, 1)).astype(np.float32)
+        
         return (torch.tensor(img), torch.tensor(label, dtype=torch.long))

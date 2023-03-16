@@ -112,7 +112,12 @@ def train(config, device='cuda:0', save_chkpt=True):
     softmax = build_criterion(config, device, task='main').to(device)
     cross_entropy = build_criterion(config, device, task='rest').to(device)
     bce = nn.BCELoss().to(device)
-    criterion = (softmax, cross_entropy, bce) if config.multi_task_learning else softmax
+    if config.multi_task_learning:
+        criterion = (softmax, cross_entropy, bce)
+    elif config.multi_spoof:
+        criterion = (softmax, cross_entropy)
+    else:
+        criterion = softmax
 
     # build optimizer and scheduler for it
     optimizer = torch.optim.SGD(model.parameters(), **config.optimizer)
