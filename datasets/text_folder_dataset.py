@@ -53,7 +53,7 @@ class TextFolderDataset(Dataset):
     def __getitem__(self, idx):
         try:
             data_path = self.data["filename"][idx]
-            img = cv.imread(os.path.join(self.root_folder, self.data_folder, data_path))
+            img = cv.imread(os.path.join(self.root_folder, self.data_folder, data_path[:-4]+".jpg"))
             #print("Successfully loaded idx ",idx)
         except:
             print("Skipping index ", idx)

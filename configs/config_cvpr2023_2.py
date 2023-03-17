@@ -47,7 +47,7 @@ optimizer = dict(lr=0.1, momentum=0.9, weight_decay=5e-4)
 
 scheduler = dict(milestones=[20,40], gamma=0.2)
 
-data = dict(batch_size=2048,
+data = dict(batch_size=512,
             data_loader_workers=16,
             sampler=None,
             pin_memory=True)
@@ -69,11 +69,11 @@ epochs = dict(start_epoch=0, max_epoch=71)
 
 activation="prelu"
 
-model= dict(model_type='ShuffleNetV2',
-            model_size = 'large', #unused
-            width_mult = 2.0,
+model= dict(model_type='Mobilenet3',
+            model_size = 'large',
+            width_mult = 1.25,
             pretrained=False,
-            embeding_dim=1024,
+            embeding_dim=1280, #ignored
             imagenet_weights=None
             )
             
@@ -94,7 +94,7 @@ dropout = dict(prob_dropout=0.1, #ignoring on micronet
                mu=0.5,
                sigma=0.3)
 
-data_parallel = dict(use_parallel=True,
+data_parallel = dict(use_parallel=False,
                      parallel_params=dict(device_ids=[0,1], output_device=0))
 
 RSC = dict(use_rsc=False,

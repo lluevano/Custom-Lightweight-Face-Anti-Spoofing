@@ -90,7 +90,7 @@ class Trainer:
                 if self.config.multi_task_learning:
                     loss = self.multi_task_criterion(output, target)
                 elif self.config.multi_spoof:
-                    loss = self.multi_spoof_criterion(output, target)
+                    loss = self.multi_spoof_criterion(output, target, self.config.criterion_params.C, self.config.criterion_params.Cs)
                 else:
                     loss = self.criterion(output, new_target)
 

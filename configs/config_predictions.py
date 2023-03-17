@@ -4,6 +4,8 @@ dataset = 'FASCVPR2023'
 
 multi_task_learning = False
 
+multi_spoof = True
+
 evaluation = True
 
 test_steps = None
@@ -35,7 +37,7 @@ external = dict(train=dict(), val=dict(), test=dict())
 img_norm_cfg = dict(mean=[126.4611/255.0, 107.1148/255.0, 100.2191/255.0], 
                     std=[68.6844/255.0, 62.5515/255.0, 61.6850/255.0]) #FASCVPR2023  
 
-activation = "dyshiftmax"
+activation = "prelu"
 
 optimizer = dict(lr=0.1, momentum=0.9, weight_decay=5e-4)
 
@@ -48,8 +50,8 @@ data = dict(batch_size=1024,
 
 resize = dict(height=224, width=224)
 
-checkpoint = dict(snapshot_name="best_65_Micronet_M3_CVPR2023.pth.tar",
-                  experiment_path='./logs/split_train/micronet-M3')
+checkpoint = dict(snapshot_name="best_66_Mobilenet3_large_multi_0.25_CVPR2023.pth.tar",
+                  experiment_path='./logs')
 
 loss = dict(loss_type='amsoftmax',
             amsoftmax=dict(m=0.5,
@@ -63,9 +65,9 @@ loss = dict(loss_type='amsoftmax',
 
 epochs = dict(start_epoch=0, max_epoch=71)
 
-model= dict(model_type='Micronet',
-            model_size = 'M3',
-            width_mult = None,
+model= dict(model_type='Mobilenet3',
+            model_size = 'large',
+            width_mult = 1.25,
             pretrained=False,
             embeding_dim=1280,
             imagenet_weights=None
@@ -85,7 +87,7 @@ dropout = dict(prob_dropout=0.1,
                mu=0.5,
                sigma=0.3)
 
-data_parallel = dict(use_parallel=True,
+data_parallel = dict(use_parallel=False,
                      parallel_params=dict(device_ids=[0,1], output_device=0))
 
 RSC = dict(use_rsc=False,

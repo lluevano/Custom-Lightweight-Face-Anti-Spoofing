@@ -153,7 +153,7 @@ class ShuffleNetV2(AntiSpoofModel):
     """ShuffleNetV2 implementation.
     """
 
-    def __init__(self, scale=1.0, c_tag=0.5, num_classes=2, activation="relu",
+    def __init__(self, scale=1.0, c_tag=0.5, activation="relu",
                  SE=False, residual=False, groups=2, **kwargs):
         """
         ShuffleNetV2 constructor
@@ -176,12 +176,14 @@ class ShuffleNetV2(AntiSpoofModel):
         self.groups = groups
 
         self.activation_type = activation
-        self.activation = get_activation(name=self.activation_type, **(dict(inp=self.c[0], oup=self.c[0])))
+        
         self.num_classes = 2
 
-        self.num_of_channels = {0.5: [24, 48, 96, 192, 1024], 1: [24, 116, 232, 464, 1024],
-                                1.5: [24, 176, 352, 704, 1024], 2: [24, 244, 488, 976, 2048]}
+        self.num_of_channels = {0.5: [24, 48, 96, 192, 1024], 1.0: [24, 116, 232, 464, 1024],
+                                1.5: [24, 176, 352, 704, 1024], 2.0: [24, 244, 488, 976, 2048]}
         self.c = [_make_divisible(chan, groups) for chan in self.num_of_channels[scale]]
+        self.activation = get_activation(name=self.activation_type, **(dict(inp=self.c[0], oup=self.c[0])))
+        print(f"Using channels {self.scale} - {self.c}")
         self.n = [3, 8, 3]  # TODO: should be [3,7,3]
         self.conv1 = nn.Conv2d(3, self.c[0], kernel_size=3, bias=False, stride=2, padding=1)
         self.bn1 = nn.BatchNorm2d(self.c[0])

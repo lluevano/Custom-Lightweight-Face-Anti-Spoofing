@@ -77,7 +77,7 @@ def main():
 #        print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
 #        print('{:<30}  {:<8}'.format('Number of parameters: ', params))
 
-    exit(0)    
+   # exit(0)    
     # preprocessing, making dataset and loader
     
     normalize = A.Normalize(**config.img_norm_cfg)
@@ -92,11 +92,18 @@ def main():
     
     test_loader = DataLoader(dataset=test_dataset, batch_size=config.data.batch_size, shuffle=False, num_workers=8)
     
+    test_dataset2 = TextFolderDataset(root_folder="./datasets/FAS-CVPR2023",
+                     data_folder="test-v2/norm_crop",
+                     txt_filename="Test.txt", transform=test_transform)
 
-    
+
+    test_loader2 = DataLoader(dataset=test_dataset2, batch_size=config.data.batch_size, shuffle=False, num_workers=8)
+
     # computing metrics
     final_str = evaluate(model, test_loader,config, device, set_name='dev')
-    
+
+    final_str += "\n"+evaluate(model, test_loader2,config, device, set_name='test')
+ 
     with open("predictions_CVPR.txt","w") as f_pred:
         f_pred.write(final_str)
     
