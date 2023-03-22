@@ -267,7 +267,7 @@ def build_model(config, device, strict=True, mode='train'):
     
     elif config.model.model_type=='Micronet':
         from models import micronet
-        model = micronet(config.model.model_size, config.resize, **parameters)
+        model = micronet(config.model.model_size, config.resize, activation=config.activation, **parameters)
    
     elif config.model.model_type=='ShuffleNetV2':
         from models import get_ShuffleNetV2_model

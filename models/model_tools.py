@@ -25,7 +25,7 @@ import torch.nn.functional as F
 
 
 class DYShiftMax(nn.Module):
-    def __init__(self, inp, oup, reduction=4, act_max=1.0, act_relu=True, init_a=[0.0, 0.0], init_b=[0.0, 0.0], relu_before_pool=False, g=None, expansion=False):
+    def __init__(self, inp=None, oup=None, reduction=4, act_max=1.0, act_relu=True, init_a=[0.0, 0.0], init_b=[0.0, 0.0], relu_before_pool=False, g=(0,4), expansion=False):
         super(DYShiftMax, self).__init__()
         self.oup = oup
         self.act_max = act_max * 2
@@ -60,6 +60,8 @@ class DYShiftMax(nn.Module):
         print('group shuffle: {}, divide group: {}'.format(self.g, expansion))
         self.gc = inp//self.g
         index=torch.Tensor(range(inp)).view(1,inp,1,1)
+        print("INDEX SHAPE")
+        print(index.shape)
         index=index.view(1,self.g,self.gc,1,1)
         indexgs = torch.split(index, [1, self.g-1], dim=1)
         indexgs = torch.cat((indexgs[1], indexgs[0]), dim=1)
@@ -120,8 +122,8 @@ def get_activation(name="relu", **kwargs):
     elif name.lower()=="prelu":
         activation = nn.PReLU()
     elif name.lower() == "dyshiftmax":
-        activation = DYShiftMax(kwargs["inp"], kwargs["oup"], reduction=8, 
-                     act_max=2.0, act_relu=True, init_a=[1.0, 1.0], init_b=[0.0, 0.0], relu_before_pool=False, g=(0,4), expansion=False)
+        activation = DYShiftMax(reduction=8, 
+                     act_max=2.0, act_relu=True, init_a=[1.0, 1.0], init_b=[0.0, 0.0], relu_before_pool=False, expansion=False, **kwargs)
     return activation
         
 

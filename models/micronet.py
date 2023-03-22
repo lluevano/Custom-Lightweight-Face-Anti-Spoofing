@@ -113,15 +113,17 @@ def get_act_layer(inp, oup, mode='SE1', act_relu=True, act_max=2, act_bias=True,
         layer = nn.Sequential(
             SELayer(inp, oup, reduction=reduction),
         )
-    elif mode == 'NA':
+    elif (mode == 'NA') or (mode.lower() == 'relu'):
         layer = nn.ReLU6(inplace=True) if act_relu else nn.Sequential()
-    elif mode == 'LeakyReLU':
+    elif mode.lower() == 'leakyrelu':
         layer = nn.LeakyReLU(inplace=True) if act_relu else nn.Sequential()
-    elif mode == 'RReLU':
+    elif mode.lower() == 'rrelu':
         layer = nn.RReLU(inplace=True) if act_relu else nn.Sequential()
-    elif mode == 'PReLU':
+    elif mode.lower() == 'relu':
+        layer = nn.ReLU(inplace=True) if act_relu else nn.Sequential()
+    elif mode.lower() == 'prelu':
         layer = nn.PReLU() if act_relu else nn.Sequential()
-    elif mode == 'DYShiftMax':
+    elif mode.lower() == 'dyshiftmax':
         layer = DYShiftMax(inp, oup, act_max=act_max, act_relu=act_relu, init_a=init_a, reduction=reduction, init_b=init_b, g=g, expansion=expansion)
     return layer
 
@@ -680,7 +682,7 @@ class DYMicroBlock(nn.Module):
 ###########################################################################
 
 class MicroNet(AntiSpoofModel):
-    def __init__(self, cfg, input_size=224, **kwargs):
+    def __init__(self, cfg, input_size=224, activation_name="dyshiftmax", **kwargs):
         super().__init__(**kwargs)
 
         mode = cfg["net_config"]
@@ -701,7 +703,7 @@ class MicroNet(AntiSpoofModel):
         #act_bias = False #cfg.MODEL.ACTIVATION.LINEARSE_BIAS
         activation_cfg = adict() #cfg.MODEL.ACTIVATION
         activation_cfg.REDUCTION = 8
-        activation_cfg.MODULE = "DYShiftMax"
+        activation_cfg.MODULE = activation_name
         activation_cfg.ACT_MAX = 2.0
         activation_cfg.LINEARSE_BIAS = False
         activation_cfg.INIT_A_BLOCK3 = (1.0,0.0)
@@ -806,7 +808,7 @@ class MicroNet(AntiSpoofModel):
                     m.bias.data.zero_()
 
 
-def micronet(model_size, input_size, **kwargs):
+def micronet(model_size, input_size, activation="dyshiftmax", **kwargs):
     """
     Constructs a MicroNet model
     """
@@ -820,4 +822,4 @@ def micronet(model_size, input_size, **kwargs):
             "M3":{"net_config": "msnx_dy12_exp6_20M_020", "stem_ch": 12, "stem_groups":(4,3), "out_ch": 1024, "dropout": 0.1, "init_a":(1.0,0.5), "init_b": (0.0,0.5)},
             }
     
-    return MicroNet(_cfg[model_size], input_size, **kwargs)
+    return MicroNet(_cfg[model_size], input_size, activation_name=activation, **kwargs)

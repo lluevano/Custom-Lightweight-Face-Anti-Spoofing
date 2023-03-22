@@ -56,7 +56,7 @@ class TextFolderDataset(Dataset):
             img = cv.imread(os.path.join(self.root_folder, self.data_folder, data_path[:-4]+".jpg"))
             #print("Successfully loaded idx ",idx)
         except:
-            print("Skipping index ", idx)
+            #print("Skipping index ", idx)
             return None
 
         img = cv.cvtColor(img, cv.COLOR_BGR2RGB)

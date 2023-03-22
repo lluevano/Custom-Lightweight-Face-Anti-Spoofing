@@ -50,7 +50,7 @@ data = dict(batch_size=1024,
 
 resize = dict(height=224, width=224)
 
-checkpoint = dict(snapshot_name="best_66_Mobilenet3_large_multi_0.25_CVPR2023.pth.tar",
+checkpoint = dict(snapshot_name="ShuffleNetV2_large_multi_0.25_CVPR2023.pth.tar",
                   experiment_path='./logs')
 
 loss = dict(loss_type='amsoftmax',
@@ -65,11 +65,11 @@ loss = dict(loss_type='amsoftmax',
 
 epochs = dict(start_epoch=0, max_epoch=71)
 
-model= dict(model_type='Mobilenet3',
-            model_size = 'large',
-            width_mult = 1.25,
+model= dict(model_type='ShuffleNetV2',
+            model_size = 'large', #unused
+            width_mult = 2.0,
             pretrained=False,
-            embeding_dim=1280,
+            embeding_dim=1024,
             imagenet_weights=None
             )
 
@@ -87,7 +87,7 @@ dropout = dict(prob_dropout=0.1,
                mu=0.5,
                sigma=0.3)
 
-data_parallel = dict(use_parallel=False,
+data_parallel = dict(use_parallel=True,
                      parallel_params=dict(device_ids=[0,1], output_device=0))
 
 RSC = dict(use_rsc=False,

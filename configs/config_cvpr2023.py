@@ -4,7 +4,7 @@ dataset = 'FASCVPR2023'
 
 multi_task_learning = False
 
-multi_spoof = True
+multi_spoof = False
 criterion_params = dict(C=1.0, Cs=0.25)
 
 evaluation = True
@@ -22,7 +22,7 @@ replay_attack_files = dict(root_folder="./datasets/replay-attack_training",
                      
 FASCVPR2023_files = dict(root_folder="./datasets/FAS-CVPR2023",
                      train_data_folder="",
-                     train_txt_filename="train_norm_crop_multi.txt", #prev was train_norm_crop.txt , split_train.txt
+                     train_txt_filename="train_norm_crop.txt", #prev was train_norm_crop.txt , split_train.txt
                      test_data_folder="",
                      test_txt_filename="split_val.txt",
                      val_data_folder="",
@@ -67,17 +67,17 @@ loss = dict(loss_type='amsoftmax',
 
 epochs = dict(start_epoch=0, max_epoch=71)
 
-activation="prelu"
+activation="relu"
 
-model= dict(model_type='ShuffleNetV2',
-            model_size = 'large', #unused
-            width_mult = 2.0,
+model= dict(model_type='Micronet',
+            model_size = 'M3', #unused
+            width_mult = None,
             pretrained=False,
             embeding_dim=1024,
             imagenet_weights=None
             )
             
-checkpoint = dict(snapshot_name=f"{model['model_type']}_{model['model_size']}_multi_0.25_CVPR2023.pth.tar",
+checkpoint = dict(snapshot_name=f"{model['model_type']}_{model['model_size']}_{activation}_CVPR2023.pth.tar",
                   experiment_path='./logs')
 
 aug = dict(type_aug=None,

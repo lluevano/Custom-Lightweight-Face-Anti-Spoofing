@@ -75,7 +75,7 @@ class BasicUnit(nn.Module):
         self.bn2 = nn.BatchNorm2d(self.right_part_out)
         self.conv3 = nn.Conv2d(self.right_part_out, self.right_part_out, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(self.right_part_out)
-        self.activation = get_activation(name=activation, **(dict(inp=self.right_part_out, oup=self.right_part_out)))
+        self.activation = get_activation(name=activation, **(dict(inp=self.right_part_out, oup=self.right_part_out, g=(0,2))))
 
         self.inplanes = inplanes
         self.outplanes = outplanes
