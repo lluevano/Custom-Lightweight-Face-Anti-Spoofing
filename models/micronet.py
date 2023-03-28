@@ -783,13 +783,13 @@ class MicroNet(AntiSpoofModel):
         )
         self._initialize_weights()
 
-    def forward(self, x):
-        x = self.features(x)
-        x = self.avgpool(x)
+    #def forward(self, x):
+    #    x = self.features(x)
+    #    x = self.avgpool(x)
 
         #x = x.view(x.size(0), -1)
         #x = self.classifier(x)
-        return x
+    #    return x
 
     def _initialize_weights(self):
         for m in self.modules():
@@ -808,7 +808,7 @@ class MicroNet(AntiSpoofModel):
                     m.bias.data.zero_()
 
 
-def micronet(model_size, input_size, activation="dyshiftmax", **kwargs):
+def micronet_constructor(model_size, input_size, activation="dyshiftmax", **kwargs):
     """
     Constructs a MicroNet model
     """

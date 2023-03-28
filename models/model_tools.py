@@ -223,7 +223,7 @@ class SELayer(nn.Module):
         self.fc = nn.Sequential(
                 nn.Linear(channel, make_divisible(channel // reduction, 8)),
                 #nn.ReLU(inplace=True),
-                get_activation(name=activation, **(dict(inp=make_divisible(channel // reduction, 8), oup=make_divisible(channel // reduction, 8)))),
+                get_activation(name="prelu", **(dict(inp=make_divisible(channel // reduction, 8), oup=make_divisible(channel // reduction, 8)))),
                 nn.Linear(make_divisible(channel // reduction, 8), channel),
                 h_sigmoid()
         )
@@ -299,10 +299,11 @@ class AntiSpoofModel(nn.Module):
         self.theta = theta
         self.multi_heads = multi_heads[0]
         self.multi_spoof = multi_heads[1]
-        self.features = nn.Identity
+        self.features = nn.Identity()
+        self.include_spoofer=False
 
         # building last several layers
-        self.conv_last = nn.Identity
+        self.conv_last = nn.Identity()
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.spoofer = nn.Linear(embeding_dim, 2)
         if self.multi_heads:
@@ -316,6 +317,9 @@ class AntiSpoofModel(nn.Module):
         x = self.features(x)
         x = self.conv_last(x)
         x = self.avgpool(x)
+        if self.include_spoofer:
+            x = x.view(x.size(0), -1)
+            x = self.spoofer(x)
         return x
 
     def make_logits(self, features, all=False):

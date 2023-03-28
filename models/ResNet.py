@@ -212,10 +212,10 @@ class ResNet(AntiSpoofModel):
             )
 
 def ResNet18(**kwargs):
-    return resnet(BasicBlock, [2, 2, 2, 2], **kwargs)
+    return ResNet(Block, [2, 2, 2, 2], **kwargs)
 
 def ResNet34(**kwargs):
-    return resnet(BasicBlock, [3, 4, 6, 3], **kwargs)
+    return ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
         
 def ResNet50(**kwargs):
     return ResNet(Bottleneck, [3,4,6,3], **kwargs)

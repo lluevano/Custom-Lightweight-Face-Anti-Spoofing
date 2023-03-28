@@ -7,7 +7,7 @@ multi_task_learning = False
 multi_spoof = False
 criterion_params = dict(C=1.0, Cs=0.25)
 
-evaluation = True
+evaluation = False
 
 test_steps = None
 
@@ -47,7 +47,7 @@ optimizer = dict(lr=0.1, momentum=0.9, weight_decay=5e-4)
 
 scheduler = dict(milestones=[20,40], gamma=0.2)
 
-data = dict(batch_size=2048,
+data = dict(batch_size=2560,
             data_loader_workers=16,
             sampler=None,
             pin_memory=True)
@@ -69,11 +69,11 @@ epochs = dict(start_epoch=0, max_epoch=71)
 
 activation="relu"
 
-model= dict(model_type='Micronet',
-            model_size = 'M3', #unused
+model= dict(model_type='ResNet18_default',
+            model_size = '18', #unused
             width_mult = None,
             pretrained=False,
-            embeding_dim=1024,
+            embeding_dim=512,
             imagenet_weights=None
             )
             

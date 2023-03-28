@@ -261,17 +261,30 @@ def build_model(config, device, strict=True, mode='train'):
             model.spoofer[3] = SoftTripleLinear(config.model.embeding_dim, 2, num_proxies=config.loss.soft_triple.K)
             
     elif config.model.model_type=='ResNet': #NEW
-        from models import ResNet50
-        assert config.model.model_size=='50'
+        from models import ResNet50#, ResNet18
+        assert (config.model.model_size=='50')# or (config.model.model_size=='18')
+        #if config.model.model_size=='50':
         model = ResNet50(**parameters)
+        #elif config.model.model_size=='18':
+        #    model = ResNet18(**parameters)
     
     elif config.model.model_type=='Micronet':
-        from models import micronet
-        model = micronet(config.model.model_size, config.resize, activation=config.activation, **parameters)
+        from models import micronet_constructor
+        model = micronet_constructor(config.model.model_size, config.resize, activation=config.activation, **parameters)
    
     elif config.model.model_type=='ShuffleNetV2':
         from models import get_ShuffleNetV2_model
         model = get_ShuffleNetV2_model(activation=config.activation, **parameters)
+    
+    elif config.model.model_type=='ShuffleNetV2_default':
+        from models import ShuffleNetV2_default
+        model = ShuffleNetV2_default(**parameters)
+    elif config.model.model_type=='MobileNetV3_large_default':
+        from models import MobileNetV3_large_default
+        model = MobileNetV3_large_default(**parameters)
+    elif config.model.model_type=='ResNet18_default':
+        from models import ResNet18_default
+        model = ResNet18_default(**parameters)
     
     else:
         raise "Model not implemented"

@@ -175,12 +175,12 @@ class Trainer:
         checkpoint = {'state_dict': self.model.state_dict(),
                    'optimizer': self.optimizer.state_dict(), 'epoch': epoch}
             
-        #try:
-        #    new_name_splt = self.path_to_checkpoint.split("/")
-        #    new_name = f'{epoch-1}_{new_name_splt[-1]}'
-        #    shutil.copyfile(self.path_to_checkpoint, os.path.join(self.config.checkpoint.experiment_path, new_name))
-        #except:
-        #    pass
+        try:
+            new_name_splt = self.path_to_checkpoint.split("/")
+            new_name = f'{epoch-1}_{new_name_splt[-1]}'
+            shutil.copyfile(self.path_to_checkpoint, os.path.join(self.config.checkpoint.experiment_path, new_name))
+        except:
+            pass
                
         save_checkpoint(checkpoint, f'{self.path_to_checkpoint}') # always latest
             
