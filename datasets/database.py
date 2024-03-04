@@ -22,7 +22,7 @@ from .celeba_spoof import CelebASpoofDataset
 from .casia_surf import CasiaSurfDataset
 from .text_folder_dataset import TextFolderDataset
 from .lcc_fasd import LccFasdDataset
-
+from .uniattackdata import UniAttackData
 
 def do_nothing(**args):
     pass
@@ -91,6 +91,36 @@ def get_datasets(config):
                                               txt_filename=config.datasets.FASCVPR2023.val_txt_filename),
                 'FASCVPR2023_test': partial(TextFolderDataset, root_folder=config.datasets.FASCVPR2023.root_folder,
                                                 data_folder=config.datasets.FASCVPR2023.test_data_folder,
-                                                txt_filename=config.datasets.FASCVPR2023.test_txt_filename),                                
+                                                txt_filename=config.datasets.FASCVPR2023.test_txt_filename),
+                'CelebA_spoof_norm_crop_train': partial(TextFolderDataset, root_folder=config.datasets.CelebA_spoof_norm_crop.root_folder,
+                                                data_folder=config.datasets.CelebA_spoof_norm_crop.train_data_folder,
+                                                txt_filename=config.datasets.CelebA_spoof_norm_crop.train_txt_filename),
+                'CelebA_spoof_norm_crop_val': partial(TextFolderDataset, root_folder=config.datasets.FASCVPR2023.root_folder,
+                                                data_folder=config.datasets.FASCVPR2023.val_data_folder,
+                                                txt_filename=config.datasets.FASCVPR2023.val_txt_filename),
+                'CelebA_spoof_norm_crop_test': partial(TextFolderDataset, root_folder=config.datasets.CelebA_spoof_norm_crop.root_folder,
+                                                data_folder=config.datasets.CelebA_spoof_norm_crop.test_data_folder,
+                                                txt_filename=config.datasets.CelebA_spoof_norm_crop.test_txt_filename),
+                'OULU_NPU_4_train': partial(TextFolderDataset, root_folder=config.datasets.OULU_NPU_4.root_folder,
+                                                data_folder=config.datasets.OULU_NPU_4.train_data_folder,
+                                                txt_filename=config.datasets.OULU_NPU_4.train_txt_filename, multi_learning=config.multi_spoof),
+                'OULU_NPU_4_val': partial(TextFolderDataset, root_folder=config.datasets.OULU_NPU_4.root_folder,
+                                              data_folder=config.datasets.OULU_NPU_4.val_data_folder,
+                                              txt_filename=config.datasets.OULU_NPU_4.val_txt_filename),
+                'OULU_NPU_4_test': partial(TextFolderDataset, root_folder=config.datasets.OULU_NPU_4.root_folder,
+                                                data_folder=config.datasets.OULU_NPU_4.test_data_folder,
+                                                txt_filename=config.datasets.OULU_NPU_4.test_txt_filename),
+                'UniAttackData_train': partial(UniAttackData, root_folder=config.datasets.UniAttackData.root_folder,
+                                                protocol=config.datasets.UniAttackData.protocol,
+                                                subset="train",
+                                                phase="phase1"),
+                'UniAttackData_val': partial(UniAttackData, root_folder=config.datasets.UniAttackData.root_folder,
+                                                protocol=config.datasets.UniAttackData.protocol,
+                                                subset="dev",
+                                                phase="phase1"),
+                'UniAttackData_test': partial(UniAttackData, root_folder=config.datasets.UniAttackData.root_folder,
+                                                protocol=config.datasets.UniAttackData.protocol,
+                                                subset="dev",
+                                                phase="phase1"),
                 }
     return datasets
