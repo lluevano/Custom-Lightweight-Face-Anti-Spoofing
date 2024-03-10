@@ -5,7 +5,10 @@ unzip retinaface-R50.zip -d models/retinaface-R50/
 #Assuming the dataset is in datasets/FAS-CVPR2024/UniAttackData 
 cd datasets/FAS-CVPR2024/
 
-#python detect_norm_crop.py
+#Parallel version available for more speed
+#python detect_norm_crop_parallel.py
+python detect_norm_crop.py
+
 cp UniAttackData/phase1/p1/*.txt norm_crop/UniAttackData/phase1/p1/
 cp UniAttackData/phase1/p2.1/*.txt norm_crop/UniAttackData/phase1/p2.1/
 cp UniAttackData/phase1/p2.2/*.txt norm_crop/UniAttackData/phase1/p2.2/
