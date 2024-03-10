@@ -1,5 +1,5 @@
 #Download face detection model
-gdown htpps://drive.google.com/uc?id=1vIfd21qGaOZv0ALVsSOTZadU6uKaHQuy
+gdown 1vIfd21qGaOZv0ALVsSOTZadU6uKaHQuy
 unzip retinaface-R50.zip -d models/
 
 #Assuming the dataset is in datasets/FAS-CVPR2024/UniAttackData 
