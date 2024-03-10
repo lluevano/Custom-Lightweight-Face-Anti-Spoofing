@@ -18,9 +18,9 @@ cp UniAttackData/phase2/p2.2/*.txt norm_crop/UniAttackData/phase1/p2.2/
 
 cd ../../
 
-python train.py --configs/config_cvpr2024_p1.py
-python train.py --configs/config_cvpr2024_p2.1.py
-python train.py --configs/config_cvpr2024_p2.2.py
+python train.py --config configs/config_cvpr2024_p1.py
+python train.py --config configs/config_cvpr2024_p2.1.py
+python train.py --config configs/config_cvpr2024_p2.2.py
 
-python save_predictions_FASCVPR2024.py
+python save_predictions_FASCVPR2024.py --config configs/config_cvpr2024_p2.2.py
 
