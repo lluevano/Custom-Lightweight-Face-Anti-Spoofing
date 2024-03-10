@@ -2,6 +2,7 @@
 from skimage import transform as trans
 import cv2
 import numpy as np
+np.bool = bool
 import glob2
 import os
 os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
@@ -12,8 +13,9 @@ import mxnet as mx
 from face_detection import FaceDetector
 
 class Pickable: 
-    detector = FaceDetector('../../models/retinaface-R50/R50-0000.params', rac='net3')
-    detector.prepare(ctx_id=-1,nms=0.2)
+    def __init__(self):
+        self.detector = FaceDetector('../../models/retinaface-R50/R50-0000.params', rac='net3')
+        self.detector.prepare(ctx_id=-1,nms=0.2)
 
 def detect_faces(img):
     #sym, arg_params, aux_params= mx.model.load_checkpoint('/root/.insightface/models/retinaface-R50/R50', 0)
@@ -54,7 +56,6 @@ def norm_crop(img, landmark, image_size=112, mode='arcface'):
 def prepare_train_set(detector, img_path):
     #living_metadata_iter = glob2.iglob("UniAttackData/phase1/p1/train")
     #spoof_metadata_iter = glob2.iglob("train/spoof/*/*/*.txt")
-    detector = detector.detector
     splt_path = img_path.split('/')
     img_name = splt_path[-1]
     norm_crop_dir = os.path.join('norm_crop', *(splt_path[:-1]))
@@ -90,12 +91,12 @@ def prepare_train_set(detector, img_path):
 
 
     
-    lock.acquire()
+    #lock.acquire()
     os.makedirs(norm_crop_dir, exist_ok=True)
     if not cv2.imwrite(img_norm_crop_path, cv2.cvtColor(img_norm_crop, cv2.COLOR_RGB2BGR)):
         print(f"Cannot save {img_norm_crop_path}")
         return
-    lock.release()
+    #lock.release()
     #file_list+=img_norm_crop_path+"\n"
     #iters_label = {0: spoof_metadata_iter, 1: living_metadata_iter}
 
@@ -107,9 +108,9 @@ def prepare_train_set(detector, img_path):
     #print("Done")
 
 
-def init(l):
-    global lock
-    lock = l
+#def init(l):
+#    global lock
+#    lock = l
 
 if __name__ == '__main__':
     #lst_file = glob2.glob(os.path.join('**','*.dds'))
@@ -117,10 +118,13 @@ if __name__ == '__main__':
     
 
     lst_imgs = glob2.glob("UniAttackData/*/*/*/*")
-    lock = Lock()
-    pool = Pool(cpu_count() - 1, initializer=init, initargs=(lock,))
-    task = partial(prepare_train_set, Pickable())
-    pool.map(task, lst_imgs)
-    pool.join()
+    #lock = Lock()
+    #pool = Pool(cpu_count() - 1, initializer=init, initargs=(lock,))
+    #task = partial(prepare_train_set, Pickable())
+    detector = Pickable().detector
+    for e in lst_imgs:
+        prepare_train_set(detector, e)
+    #pool.map(task, lst_imgs)
+    #pool.join()
     pool.close()
     print("Done!")

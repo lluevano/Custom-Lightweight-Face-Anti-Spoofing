@@ -37,7 +37,7 @@ def MobileNetV3_large_default(**kwargs):
     #print(new_model)
     return new_model
    
-def ResNet18_default(**kwargs):
+def ResNet50_default(**kwargs):
     model_resnet = torchvision.models.resnet18()
     model_resnet.fc = torch.nn.Identity()
     return model_wrapper(model_resnet, **kwargs)
