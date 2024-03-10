@@ -25,5 +25,5 @@ python train.py --config configs/config_cvpr2024_p1.py
 python train.py --config configs/config_cvpr2024_p2_1.py
 python train.py --config configs/config_cvpr2024_p2_2.py
 
-python save_predictions_FASCVPR2024.py --config configs/config_cvpr2024_p2.2.py
+python save_predictions_FASCVPR2024.py --config configs/config_cvpr2024_p1.py
 
