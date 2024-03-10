@@ -129,8 +129,8 @@ dropout = dict(prob_dropout=0.1, #ignoring on micronet
                mu=0.5,
                sigma=0.3)
 
-data_parallel = dict(use_parallel=False,
-                     parallel_params=dict(device_ids=[0], output_device=0))
+data_parallel = dict(use_parallel=True,
+                     parallel_params=dict(device_ids=[0,1,2], output_device=0))
 
 RSC = dict(use_rsc=False,
            p=0.333,
