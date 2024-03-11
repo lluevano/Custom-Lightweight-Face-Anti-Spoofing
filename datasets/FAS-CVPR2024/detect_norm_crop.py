@@ -126,5 +126,5 @@ if __name__ == '__main__':
         prepare_train_set(detector, e)
     #pool.map(task, lst_imgs)
     #pool.join()
-    pool.close()
+    #pool.close()
     print("Done!")
