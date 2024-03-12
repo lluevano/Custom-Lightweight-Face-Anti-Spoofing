@@ -137,10 +137,11 @@ def train(config, device='cuda:0', save_chkpt=True):
         print(f'epoch: {epoch}  train loss: {train_loss}   train accuracy: {train_accuracy}')
 
         # validate your model
-        accuracy = trainer.validate()
+        if (epoch%50) == 0:
+            accuracy = trainer.validate()
 
         # eval metrics such as AUC, APCER, BPCER, ACER on val and test dataset according to rule
-        trainer.eval(epoch, accuracy, save_chkpt=save_chkpt)
+            trainer.eval(epoch, accuracy, save_chkpt=save_chkpt)
         # for testing purposes
         if config.test_steps:
             exit()
