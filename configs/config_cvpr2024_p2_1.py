@@ -78,7 +78,7 @@ img_norm_cfg = dict(mean=[63.2480/255.0, 47.6288/255.0, 43.1594/255.0],
 
 #img_norm_cfg = dict(mean=[129.2820/255.0, 107.9376/255.0, 99.6690/255.0], std=[72.0941/255.0, 65.0965/255.0, 63.7481/255.0]) #celebaspoof   
 
-optimizer = dict(lr=0.0001, momentum=0.9, weight_decay=5e-4)
+optimizer = dict(lr=0.1, momentum=0.9, weight_decay=5e-4)
 
 scheduler = dict(milestones=[200,400], gamma=0.2)
 
